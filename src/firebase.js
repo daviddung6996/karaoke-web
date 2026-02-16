@@ -59,7 +59,16 @@ export function listenToQueue(callback) {
             ...val,
             id: key,
         }));
-        items.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+        // Sort: priority items first (higher priorityOrder = more recent = first),
+        // then normal items by addedAt ascending (FIFO)
+        items.sort((a, b) => {
+            const aPri = a.priorityOrder || 0;
+            const bPri = b.priorityOrder || 0;
+            if (aPri > 0 && bPri > 0) return bPri - aPri;
+            if (aPri > 0) return -1;
+            if (bPri > 0) return 1;
+            return (a.addedAt || 0) - (b.addedAt || 0);
+        });
         callback(items);
     });
 }

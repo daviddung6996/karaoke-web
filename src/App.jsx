@@ -69,12 +69,14 @@ function App() {
   };
 
   const handleKeyDown = (e) => {
+    if (!suggestions.length) return;
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
+      setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev > -1 ? prev - 1 : prev));
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (selectedIndex >= 0 && suggestions[selectedIndex]) {

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- 2026 Light Theme Pro Max - Background -->
+  <rect width="512" height="512" rx="0" fill="#F8FAFC"/>
+  
+  <!-- "The Resonance 6" Glyph -->
+  <g transform="translate(116, 96)">
+    <!-- Base Structure of the '6' -->
+    <path d="M0 0H280V80H80V160H280V320H0V0Z" fill="#4F46E5"/>
+    
+    <!-- Accent/Play Button Geometry -->
+    <path d="M80 80L180 130L80 180V80Z" fill="#0F172A"/>
+    
+    <!-- Sharp Technical Cut -->
+    <path d="M280 160L200 240H280V160Z" fill="#6366F1"/>
+  </g>
+  
+  <!-- Subtle Technical Grid Detail -->
+  <rect x="400" y="400" width="32" height="32" fill="#4F46E5" opacity="0.1"/>
+</svg>

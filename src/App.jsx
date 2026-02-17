@@ -164,7 +164,7 @@ function App() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <div className="header-icon"><IconMic /></div>
+          <img src="/logo.svg" alt="Logo" className="header-logo" />
           <div>
             <h1 className="header-title">Karaoke Sáu Nhàn</h1>
             <p className="header-sub">Chọn bài hát yêu thích</p>

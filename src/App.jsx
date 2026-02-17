@@ -6,7 +6,11 @@ import { useSuggestions } from './useSuggestions';
 import SuggestDropdown from './SuggestDropdown';
 import { useNameSuggestions } from './useNameSuggestions';
 
-const QUICK_TAGS = ['Bolero', 'Sơn Tùng', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Quang Lê', 'Jack'];
+const QUICK_TAGS = {
+  'Trữ Tình & Bolero': ['Bolero', 'Rumba', 'Cha Cha Cha', 'Nhạc Sống', 'Tuấn Vũ', 'Giao Linh'],
+  'Ca Sĩ Bất Hủ': ['Tuấn Ngọc', 'Ngọc Sơn', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Quang Lê', 'Mỹ Tâm', 'Lệ Quyên'],
+  'Nhạc Trẻ': ['Sơn Tùng', 'Jack', 'Mono', 'Hieuthuhai', 'Tăng Duy Tân', 'Hoàng Thùy Linh']
+};
 
 const formatTime = (s) => {
   if (!s || s < 0) return '0:00';
@@ -122,6 +126,13 @@ function App() {
     }
   };
 
+  const handleInteraction = () => {
+    if (isFocused) {
+      inputRef.current?.blur();
+      setIsFocused(false);
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (!suggestions.length) return;
 
@@ -138,6 +149,7 @@ function App() {
       } else {
         handleSearch();
       }
+      inputRef.current?.blur(); // Dismiss keyboard on enter
     }
   };
 
@@ -288,15 +300,26 @@ function App() {
             </div>
 
             {!query && (
-              <div className="quick-tags">
-                {QUICK_TAGS.map((tag) => (
-                  <button key={tag} className="quick-tag" onClick={() => handleQuickTag(tag)}>{tag}</button>
+              <div className="quick-tags-container" onTouchStart={handleInteraction}>
+                {Object.entries(QUICK_TAGS).map(([category, tags]) => (
+                  <div key={category} className="quick-tag-category">
+                    <h3 className="category-title">{category}</h3>
+                    <div className="quick-tags-row">
+                      {tags.map((tag) => (
+                        <button key={tag} className="quick-tag" onClick={() => handleQuickTag(tag)}>{tag}</button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="results-area">
+          <div
+            className="results-area"
+            onTouchStart={handleInteraction}
+            onScroll={handleInteraction}
+          >
             {/* Empty State */}
             {!query && (
               <div className="empty-state">

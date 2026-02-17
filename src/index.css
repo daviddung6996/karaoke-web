@@ -246,43 +246,62 @@ body {
   transform: translateY(-50%) scale(0.9);
 }
 
-/* Quick Tags */
-.quick-tags {
+/* Quick Tags Container */
+.quick-tags-container {
+  padding: 12px 16px;
+  background: var(--bg-primary);
   display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.quick-tags::-webkit-scrollbar {
-  display: none;
+.quick-tag-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-left: 2px;
+}
+
+.quick-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .quick-tag {
   flex-shrink: 0;
-  scroll-snap-align: start;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 10px 16px;
+  /* Larger touch target */
+  font-size: 14px;
+  /* Larger font */
   font-weight: 700;
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  /* Pill shape */
   background: var(--bg-secondary);
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  /* High contrast */
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
   transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  /* Subtle depth */
 }
 
 .quick-tag:active {
   background: var(--accent-light);
   border-color: var(--accent);
   color: var(--accent);
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 /* ═══════════════════ SONG LIST ═══════════════════ */
@@ -586,8 +605,15 @@ body {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* ═══════════════════ NEXT IN QUEUE ═══════════════════ */

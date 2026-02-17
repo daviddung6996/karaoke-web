@@ -1,19 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <!-- 2026 Light Theme Pro Max - Background -->
-  <rect width="512" height="512" rx="0" fill="#F8FAFC"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Blue Neon Mic Frame -->
+  <rect x="30" y="20" width="40" height="50" rx="20" 
+        stroke="#4F46E5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
   
-  <!-- "The Resonance 6" Glyph -->
-  <g transform="translate(116, 96)">
-    <!-- Base Structure of the '6' -->
-    <path d="M0 0H280V80H80V160H280V320H0V0Z" fill="#4F46E5"/>
-    
-    <!-- Accent/Play Button Geometry -->
-    <path d="M80 80L180 130L80 180V80Z" fill="#0F172A"/>
-    
-    <!-- Sharp Technical Cut -->
-    <path d="M280 160L200 240H280V160Z" fill="#6366F1"/>
-  </g>
-  
-  <!-- Subtle Technical Grid Detail -->
-  <rect x="400" y="400" width="32" height="32" fill="#4F46E5" opacity="0.1"/>
+  <path d="M26 55 V60 C26 73.255 36.745 84 50 84 C63.255 84 74 73.255 74 60 V55" 
+        stroke="#4F46E5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <path d="M50 84 V94" stroke="#4F46E5" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
+  <rect x="42" y="90" width="16" height="4" rx="2" fill="#4F46E5" filter="url(#glow)"/>
+
+  <!-- Gold Neon Number 6 - Clean & Upright -->
+  <!-- Vertical-ish stem easing into a loop -->
+  <path d="M56 28 C50 28 42 34 42 48 C42 56 46 60 51 60 C57 60 60 55.5 60 50 C60 45 57 42 51 42 C46 42 42 46 42 48" 
+        stroke="#FFD700" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)"/>
+
 </svg>

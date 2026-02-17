@@ -8,6 +8,60 @@ import { useNameSuggestions } from './useNameSuggestions';
 
 const QUICK_TAGS = ['Bolero', 'Sơn Tùng', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Quang Lê', 'Jack'];
 
+const formatTime = (s) => {
+  if (!s || s < 0) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+};
+
+function NowPlayingProgress({ nowPlaying }) {
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const duration = nowPlaying?.duration || 0;
+
+  useEffect(() => {
+    if (!duration || duration <= 0) { setProgress(0); setTimeLeft(0); return; }
+
+    const calc = () => {
+      // Use updatedAt + elapsed time since last sync for smooth interpolation
+      const serverTime = nowPlaying.currentTime || 0;
+      const updatedAt = nowPlaying.updatedAt || nowPlaying.startedAt || Date.now();
+      const elapsed = (Date.now() - updatedAt) / 1000;
+      const estimated = Math.min(serverTime + elapsed, duration);
+      setCurrentTime(estimated);
+      setProgress(Math.min((estimated / duration) * 100, 100));
+      setTimeLeft(Math.max(duration - estimated, 0));
+    };
+
+    calc();
+    const interval = setInterval(calc, 1000);
+    return () => clearInterval(interval);
+  }, [nowPlaying?.currentTime, nowPlaying?.updatedAt, duration]);
+
+  if (!duration || duration <= 0) return null;
+
+  const isAlmostDone = timeLeft > 0 && timeLeft <= 60;
+
+  return (
+    <div className="np-progress">
+      <div className="np-progress-bar">
+        <div className="np-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="np-progress-info">
+        <span className="np-time">{formatTime(currentTime)}</span>
+        {isAlmostDone ? (
+          <span className="np-time-left np-almost-done">Sắp xong!</span>
+        ) : (
+          <span className="np-time-left">còn {formatTime(timeLeft)}</span>
+        )}
+        <span className="np-time">{formatTime(duration)}</span>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [query, setQuery] = useState('');
   const [ytResults, setYtResults] = useState([]);
@@ -340,19 +394,22 @@ function App() {
             <div className="queue-list">
               {nowPlaying && (
                 <div className="queue-card now-playing-card">
-                  <div className="now-playing-icon">🎤</div>
-                  <div className="queue-info">
-                    <h3 className="queue-title">{nowPlaying.cleanTitle || nowPlaying.title}</h3>
-                    <p className="queue-meta">
-                      <span className="queue-singer">{nowPlaying.addedBy}</span>
-                      {nowPlaying.artist && <span className="queue-artist">• {nowPlaying.artist}</span>}
-                    </p>
+                  <div className="np-top-row">
+                    <div className="now-playing-icon">🎤</div>
+                    <div className="queue-info">
+                      <h3 className="queue-title">{nowPlaying.cleanTitle || nowPlaying.title}</h3>
+                      <p className="queue-meta">
+                        <span className="queue-singer">{nowPlaying.addedBy}</span>
+                        {nowPlaying.artist && <span className="queue-artist">• {nowPlaying.artist}</span>}
+                      </p>
+                    </div>
+                    <div className="now-playing-badge">Đang hát</div>
                   </div>
-                  <div className="now-playing-badge">Đang hát</div>
+                  <NowPlayingProgress nowPlaying={nowPlaying} />
                 </div>
               )}
               {queue.map((item, i) => (
-                <div key={item.id || i} className="queue-card" style={{ animationDelay: `${i * 30}ms` }}>
+                <div key={item.id || i} className={`queue-card ${i === 0 ? 'queue-card-next' : ''}`} style={{ animationDelay: `${i * 30}ms` }}>
                   <div className="queue-number">{i + 1}</div>
                   <div className="queue-info">
                     <h3 className="queue-title">{item.cleanTitle || item.title}</h3>
@@ -361,8 +418,10 @@ function App() {
                       {item.artist && <span className="queue-artist">• {item.artist}</span>}
                     </p>
                   </div>
-                  {i === 0 && (
-                    <div className="playing-indicator"><IconPlay /> Sắp hát</div>
+                  {i === 0 ? (
+                    <div className="next-badge"><IconPlay /> Sắp hát</div>
+                  ) : (
+                    <div className="queue-position">#{i + 1}</div>
                   )}
                 </div>
               ))}

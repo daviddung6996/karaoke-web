@@ -478,21 +478,6 @@ body {
   margin-left: 2px;
 }
 
-.playing-indicator {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--success);
-  background: var(--success-bg);
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
 
 /* ═══════════════════ NOW PLAYING CARD ═══════════════════ */
 .now-playing-card {
@@ -501,6 +486,15 @@ body {
     linear-gradient(135deg, #6366f1, #ec4899) border-box;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
   margin-bottom: 12px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.np-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 .now-playing-icon {
@@ -510,6 +504,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 32px;
+  flex-shrink: 0;
 }
 
 @keyframes pulse {
@@ -539,18 +534,90 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
-  animation: shimmer 2s infinite linear;
-  background-size: 200% auto;
+  flex-shrink: 0;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 0% 50%;
-  }
+/* ═══════════════════ NOW PLAYING PROGRESS ═══════════════════ */
+.np-progress {
+  width: 100%;
+}
 
-  100% {
-    background-position: 100% 50%;
-  }
+.np-progress-bar {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.np-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  border-radius: 4px;
+  transition: width 1s linear;
+  min-width: 0;
+}
+
+.np-progress-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.np-time {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  tabular-nums: true;
+  font-variant-numeric: tabular-nums;
+}
+
+.np-time-left {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.np-almost-done {
+  color: #ef4444;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ═══════════════════ NEXT IN QUEUE ═══════════════════ */
+.queue-card-next {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+
+.next-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--success);
+  background: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--success);
+}
+
+.queue-position {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 /* ═══════════════════ NAME SUGGESTIONS ═══════════════════ */

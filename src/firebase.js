@@ -38,71 +38,83 @@ function getDeviceId() {
     return id;
 }
 
-// --- Round-Robin Queue Generator (mirrors main app's queueLogic.js) ---
+// --- Queue Logic (mirrors main app's queueLogic.js exactly) ---
+
+function parseSongs(songs) {
+    if (!songs) return [];
+    if (Array.isArray(songs)) return [...songs];
+    return Object.values(songs);
+}
+
+function globalNextRound(customerQueues) {
+    const rounds = [];
+    for (const data of Object.values(customerQueues || {})) {
+        const songs = parseSongs(data.songs);
+        const normalSongs = songs.filter(s => !s.isPriority);
+        if (normalSongs.length > 0) {
+            rounds.push(data.startRound || 1);
+        }
+    }
+    return rounds.length > 0 ? Math.min(...rounds) : 1;
+}
 
 function generatePlayQueue(customerQueues) {
+    if (!customerQueues || Object.keys(customerQueues).length === 0) return [];
+
     const prioritySongs = [];
-    const normalCustomerQueues = {};
+    const customers = [];
 
-    Object.entries(customerQueues).forEach(([id, data]) => {
-        let songs = [];
-        if (data.songs) {
-            songs = Array.isArray(data.songs) ? [...data.songs] : Object.values(data.songs);
-        }
-
+    for (const [id, data] of Object.entries(customerQueues)) {
+        const songs = parseSongs(data.songs);
         const pSongs = songs.filter(s => s.isPriority);
-        const nSongs = songs.filter(s => !s.isPriority);
+        const nSongs = songs.filter(s => !s.isPriority)
+            .sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
 
-        if (pSongs.length > 0) {
-            pSongs.forEach(s => prioritySongs.push({
+        for (const s of pSongs) {
+            prioritySongs.push({
                 ...s,
                 customerId: id,
                 customerName: data.name,
                 isPriority: true,
                 firebaseKey: s.id || s.firebaseKey,
-            }));
+            });
         }
 
         if (nSongs.length > 0) {
-            normalCustomerQueues[id] = {
-                ...data,
-                songs: nSongs.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0)),
-            };
+            customers.push({
+                id,
+                name: data.name,
+                firstOrderTime: data.firstOrderTime || 0,
+                startRound: data.startRound || 1,
+                songs: nSongs,
+            });
         }
-    });
+    }
 
     prioritySongs.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+    customers.sort((a, b) => a.firstOrderTime - b.firstOrderTime);
+
+    if (customers.length === 0) return prioritySongs;
+
+    const minRound = Math.min(...customers.map(c => c.startRound));
+    const maxRound = Math.max(...customers.map(c => c.startRound + c.songs.length - 1));
 
     const rrQueue = [];
-    const customers = Object.entries(normalCustomerQueues)
-        .map(([id, data]) => ({ id, ...data }))
-        .sort((a, b) => (a.firstOrderTime || 0) - (b.firstOrderTime || 0));
-
-    let round = 1;
-    let hasSongs = true;
-    const customerIndices = {};
-    customers.forEach(c => { customerIndices[c.id] = 0; });
-
-    while (hasSongs) {
-        hasSongs = false;
+    for (let round = minRound; round <= maxRound; round++) {
         for (const customer of customers) {
-            const songs = customer.songs || [];
-            const index = customerIndices[customer.id];
-            if (index < songs.length) {
-                const song = songs[index];
+            const songIndex = round - customer.startRound;
+            if (songIndex >= 0 && songIndex < customer.songs.length) {
+                const song = customer.songs[songIndex];
                 rrQueue.push({
                     ...song,
                     customerId: customer.id,
                     customerName: customer.name,
                     round,
-                    originalSongIndex: index,
-                    firebaseKey: song.id || song.firebaseKey || `${customer.id}_${index}`,
+                    originalSongIndex: songIndex,
+                    firebaseKey: song.id || song.firebaseKey || `${customer.id}_${songIndex}`,
                 });
-                customerIndices[customer.id]++;
-                hasSongs = true;
             }
         }
-        if (hasSongs) round++;
     }
 
     return [...prioritySongs, ...rrQueue];
@@ -133,16 +145,36 @@ export async function addSongToQueue(song) {
     const deviceId = getDeviceId();
     const customerRef = ref(database, `customerQueues/${deviceId}`);
     const snapshot = await get(customerRef);
-    let customerData = snapshot.val();
-
+    const customerData = snapshot.val();
     const now = Date.now();
 
-    // Init customer record if new
+    // Read all customerQueues to compute fair startRound (NOT from playQueue)
+    const allSnapshot = await get(ref(database, 'customerQueues'));
+    const allQueues = allSnapshot.val() || {};
+    const nextRound = globalNextRound(allQueues);
+
     if (!customerData) {
-        customerData = { name: song.addedBy || 'Khách mới', firstOrderTime: now, songs: {} };
+        // Brand new customer → join at current active round
+        await update(customerRef, {
+            name: song.addedBy || 'Khách mới',
+            firstOrderTime: now,
+            startRound: nextRound,
+        });
+    } else {
+        // Existing customer — check if they have any remaining normal songs
+        const songs = customerData.songs ? Object.values(customerData.songs) : [];
+        const hasNormalSongs = songs.some(s => !s.isPriority);
+
+        if (!hasNormalSongs) {
+            // Returning customer → bump startRound
+            const bumped = Math.max(customerData.startRound || 1, nextRound);
+            await update(customerRef, { startRound: bumped, name: song.addedBy });
+        } else {
+            await update(customerRef, { name: song.addedBy });
+        }
     }
 
-    // Push new song under this customer
+    // Add song
     const songsRef = ref(database, `customerQueues/${deviceId}/songs`);
     const newSongRef = push(songsRef);
     const newSongKey = newSongRef.key;
@@ -160,16 +192,7 @@ export async function addSongToQueue(song) {
         source: 'web',
     });
 
-    // Update customer metadata
-    if (!customerData.firstOrderTime) {
-        await update(customerRef, { firstOrderTime: now, name: song.addedBy });
-    } else {
-        await update(customerRef, { name: song.addedBy });
-    }
-
-    // Regenerate playQueue
     await syncPlayQueue();
-
     return { key: newSongKey };
 }
 

@@ -7,9 +7,11 @@ import SuggestDropdown from './SuggestDropdown';
 import { useNameSuggestions } from './useNameSuggestions';
 
 const QUICK_TAGS = {
-  'Trữ Tình & Bolero': ['Bolero', 'Rumba', 'Cha Cha Cha', 'Nhạc Sống', 'Tuấn Vũ', 'Giao Linh'],
-  'Ca Sĩ Bất Hủ': ['Tuấn Ngọc', 'Ngọc Sơn', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Quang Lê', 'Mỹ Tâm', 'Lệ Quyên'],
-  'Nhạc Trẻ': ['Sơn Tùng', 'Jack', 'Mono', 'Hieuthuhai', 'Tăng Duy Tân', 'Hoàng Thùy Linh']
+  'Trữ Tình & Bolero': ['Bolero', 'Rumba', 'Cha Cha Cha', 'Nhạc Sống', 'Tân Cổ', 'Vọng Cổ', 'Trữ Tình Quê Hương', 'Nhạc Vàng'],
+  'Ca Sĩ Bolero': ['Tuấn Vũ', 'Giao Linh', 'Chế Linh', 'Thanh Tuyền', 'Hương Lan', 'Phi Nhung', 'Quang Lê', 'Lệ Quyên', 'Đan Nguyên', 'Thiên Quang', 'Phương Mỹ Chi'],
+  'Ca Sĩ Bất Hủ': ['Tuấn Ngọc', 'Khánh Ly', 'Ngọc Sơn', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Mỹ Tâm', 'Bằng Kiều', 'Lam Trường', 'Đan Trường', 'Cẩm Ly', 'Quang Dũng'],
+  'Bài Hát Bất Hủ': ['Duyên Phận', 'Đêm Buồn Tỉnh Lẻ', 'Hai Lối Mộng', 'Tình Nhạt Phai', 'Xin Anh Giữ Trọn Tình Quê', 'Nỗi Buồn Hoa Phượng', 'Sầu Lẻ Bóng', 'Liên Khúc Nhạc Vàng'],
+  'Nhạc Trẻ': ['Sơn Tùng', 'Jack', 'Mono', 'Hieuthuhai', 'Tăng Duy Tân', 'Hoàng Thùy Linh', 'Đức Phúc', 'Erik', 'Bích Phương', 'Min'],
 };
 
 const formatTime = (s) => {
@@ -192,9 +194,9 @@ function App() {
   };
 
   const handleQuickTag = (tag) => {
+    inputRef.current?.blur();
     setQuery(tag);
     handleSearch(tag);
-    inputRef.current?.focus();
   };
 
   const handleNameKeyDown = (e) => {

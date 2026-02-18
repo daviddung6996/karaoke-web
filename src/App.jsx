@@ -7,7 +7,7 @@ import SuggestDropdown from './SuggestDropdown';
 import { useNameSuggestions } from './useNameSuggestions';
 
 const QUICK_TAGS = {
-  'Trữ Tình & Bolero': ['Bolero', 'Rumba', 'Cha Cha Cha', 'Nhạc Sống', 'Tân Cổ', 'Vọng Cổ', 'Trữ Tình Quê Hương', 'Nhạc Vàng'],
+  'Trữ Tình & Bolero': ['Bolero', 'Nhạc Sống', 'Tân Cổ', 'Vọng Cổ', 'Trữ Tình Quê Hương', 'Nhạc Vàng', 'Bolero Remix', 'LK Bolero'],
   'Ca Sĩ Bolero': ['Tuấn Vũ', 'Giao Linh', 'Chế Linh', 'Thanh Tuyền', 'Hương Lan', 'Phi Nhung', 'Quang Lê', 'Lệ Quyên', 'Đan Nguyên', 'Thiên Quang', 'Phương Mỹ Chi'],
   'Ca Sĩ Bất Hủ': ['Tuấn Ngọc', 'Khánh Ly', 'Ngọc Sơn', 'Đàm Vĩnh Hưng', 'Như Quỳnh', 'Mỹ Tâm', 'Bằng Kiều', 'Lam Trường', 'Đan Trường', 'Cẩm Ly', 'Quang Dũng'],
   'Bài Hát Bất Hủ': ['Duyên Phận', 'Đêm Buồn Tỉnh Lẻ', 'Hai Lối Mộng', 'Tình Nhạt Phai', 'Xin Anh Giữ Trọn Tình Quê', 'Nỗi Buồn Hoa Phượng', 'Sầu Lẻ Bóng', 'Liên Khúc Nhạc Vàng'],

@@ -196,6 +196,87 @@ export async function addSongToQueue(song) {
     return { key: newSongKey };
 }
 
+export async function addReservation(guestName) {
+    if (!firebaseReady || !database) {
+        console.warn('[Firebase] Offline — cannot add reservation');
+        return Promise.reject(new Error('Firebase not configured'));
+    }
+
+    const deviceId = getDeviceId();
+    const customerRef = ref(database, `customerQueues/${deviceId}`);
+    const snapshot = await get(customerRef);
+    const customerData = snapshot.val();
+    const now = Date.now();
+
+    const allSnapshot = await get(ref(database, 'customerQueues'));
+    const allQueues = allSnapshot.val() || {};
+    const nextRound = globalNextRound(allQueues);
+
+    if (!customerData) {
+        await update(customerRef, {
+            name: guestName || 'Khách mới',
+            firstOrderTime: now,
+            startRound: nextRound,
+        });
+    } else {
+        const songs = customerData.songs ? Object.values(customerData.songs) : [];
+        const hasNormalSongs = songs.some(s => !s.isPriority);
+        if (!hasNormalSongs) {
+            const bumped = Math.max(customerData.startRound || 1, nextRound);
+            await update(customerRef, { startRound: bumped, name: guestName });
+        } else {
+            await update(customerRef, { name: guestName });
+        }
+    }
+
+    const songsRef = ref(database, `customerQueues/${deviceId}/songs`);
+    const newSongRef = push(songsRef);
+    const newSongKey = newSongRef.key;
+
+    await set(newSongRef, {
+        id: newSongKey,
+        videoId: null,
+        title: null,
+        cleanTitle: null,
+        artist: null,
+        addedBy: guestName || 'Khách',
+        thumbnail: null,
+        addedAt: now,
+        isPriority: false,
+        source: 'web',
+        status: 'waiting',
+    });
+
+    await syncPlayQueue();
+
+    // Save slot ID to localStorage for ownership tracking
+    const mySlots = JSON.parse(localStorage.getItem('karaoke_mySlots') || '[]');
+    mySlots.push(newSongKey);
+    localStorage.setItem('karaoke_mySlots', JSON.stringify(mySlots));
+
+    return { key: newSongKey };
+}
+
+export async function updateSlotWithSong(songId, songData) {
+    if (!firebaseReady || !database || !songId) return;
+
+    const deviceId = getDeviceId();
+    const songRef = ref(database, `customerQueues/${deviceId}/songs/${songId}`);
+    const snapshot = await get(songRef);
+    if (!snapshot.exists()) return;
+
+    await update(songRef, {
+        videoId: songData.videoId,
+        title: songData.title,
+        cleanTitle: songData.cleanTitle || songData.title,
+        artist: songData.artist || '',
+        thumbnail: songData.thumbnail || '',
+        status: 'ready',
+    });
+
+    await syncPlayQueue();
+}
+
 // --- Listeners ---
 
 export function listenToQueue(callback) {

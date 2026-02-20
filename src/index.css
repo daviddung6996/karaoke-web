@@ -1343,3 +1343,110 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ═══════════════════ RESERVATION / WAITING SLOTS ═══════════════════ */
+.btn-reserve {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+}
+
+.btn-reserve:active {
+  transform: scale(0.97);
+}
+
+.btn-reserve:hover {
+  background: #d97706;
+}
+
+.queue-card-waiting {
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
+}
+
+.queue-card-skipped {
+  opacity: 0.5;
+  border-color: #cbd5e1 !important;
+}
+
+.queue-title-waiting {
+  color: #b45309 !important;
+}
+
+.btn-choose-song {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 5px 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.btn-choose-song:active {
+  transform: scale(0.95);
+}
+
+.skipped-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid #e2e8f0;
+}
+
+.slot-filling-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #fffbeb;
+  border-bottom: 1px solid #f59e0b;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.slot-filling-cancel {
+  background: none;
+  border: none;
+  color: #b45309;
+  font-weight: 800;
+  font-size: 11px;
+  cursor: pointer;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.slot-filling-cancel:hover {
+  background: rgba(245, 158, 11, 0.1);
+}

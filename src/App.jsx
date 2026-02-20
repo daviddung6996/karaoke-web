@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconMic, IconMusic, IconSearch, IconList, IconPlus, IconX, IconCheck, IconPlay, IconStar, IconLoader } from './Icons';
-import { addSongToQueue, listenToQueue, listenToNowPlaying } from './firebase';
+import { addSongToQueue, addReservation, updateSlotWithSong, listenToQueue, listenToNowPlaying } from './firebase';
 import { searchVideos, formatViews } from './videoSearch';
 import { useSuggestions } from './useSuggestions';
 import SuggestDropdown from './SuggestDropdown';
@@ -83,6 +83,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('search');
   const [savedName, setSavedName] = useState(''); // Store persisted name
   const [isEditingName, setIsEditingName] = useState(false); // Toggle between modes
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [reserveName, setReserveName] = useState('');
+  const [selectingSongForSlot, setSelectingSongForSlot] = useState(null); // slot ID being filled
   const [nameSelectedIndex, setNameSelectedIndex] = useState(-1); // For keyboard nav
 
   // Name suggestions
@@ -156,13 +159,18 @@ function App() {
   };
 
   const handleAddClick = (song) => {
+    // If selecting song for an existing slot
+    if (selectingSongForSlot) {
+      handleSelectSongForSlot(song);
+      return;
+    }
     setSelectedSong(song);
     if (savedName) {
       setGuestName(savedName);
-      setIsEditingName(false); // Show confirm screen
+      setIsEditingName(false);
     } else {
       setGuestName('');
-      setIsEditingName(true); // Show input screen
+      setIsEditingName(true);
     }
     setShowNameModal(true);
   };
@@ -198,6 +206,44 @@ function App() {
     setQuery(tag);
     handleSearch(tag);
   };
+
+  const handleReserve = async () => {
+    const name = reserveName.trim() || savedName || 'Khách';
+    try {
+      await addReservation(name);
+      setShowReserveModal(false);
+      setReserveName('');
+      setToast(`${name} đã giữ chỗ thành công!`);
+      setTimeout(() => setToast(null), 2500);
+      localStorage.setItem('karaoke_guest_name', name);
+      setSavedName(name);
+    } catch {
+      setToast('Chưa kết nối được. Thử lại nhé!');
+      setTimeout(() => setToast(null), 2500);
+    }
+  };
+
+  const handleSelectSongForSlot = async (song) => {
+    if (!selectingSongForSlot) return;
+    try {
+      await updateSlotWithSong(selectingSongForSlot, {
+        videoId: song.videoId || '',
+        title: song.title,
+        cleanTitle: song.cleanTitle || song.title,
+        artist: song.artist || '',
+        thumbnail: song.thumbnail || '',
+      });
+      setSelectingSongForSlot(null);
+      setToast(`Đã chọn bài "${song.cleanTitle || song.title}"`);
+      setTimeout(() => setToast(null), 2500);
+      setActiveTab('queue');
+    } catch {
+      setToast('Lỗi chọn bài. Thử lại nhé!');
+      setTimeout(() => setToast(null), 2500);
+    }
+  };
+
+  const mySlots = JSON.parse(localStorage.getItem('karaoke_mySlots') || '[]');
 
   const handleNameKeyDown = (e) => {
     if (!showNameSuggestions || nameSuggestions.length === 0) {
@@ -262,6 +308,12 @@ function App() {
       {/* Search Tab */}
       {activeTab === 'search' && (
         <div className="content">
+          {selectingSongForSlot && (
+            <div className="slot-filling-banner">
+              <span>🎵 Đang chọn bài cho slot của bạn</span>
+              <button onClick={() => setSelectingSongForSlot(null)} className="slot-filling-cancel">Hủy</button>
+            </div>
+          )}
           <div className="search-section">
             <div className="search-box-container" style={{ position: 'relative' }}>
               <div className="search-box">
@@ -414,9 +466,25 @@ function App() {
               <div className="empty-icon"><IconList size={32} /></div>
               <p>Chưa có bài nào</p>
               <p className="empty-hint">Chuyển sang "Tìm Bài" để chọn nhé!</p>
+              <button className="btn-reserve" style={{ marginTop: '12px' }} onClick={() => {
+                if (savedName) setReserveName(savedName);
+                setShowReserveModal(true);
+              }}>
+                <IconPlus /> Giữ chỗ trước
+              </button>
             </div>
           ) : (
             <div className="queue-list">
+              {/* Reserve slot button */}
+              <button className="btn-reserve" onClick={() => {
+                if (savedName) {
+                  setReserveName(savedName);
+                }
+                setShowReserveModal(true);
+              }}>
+                <IconPlus /> Giữ chỗ (không cần chọn bài)
+              </button>
+
               {nowPlaying && (
                 <div className="queue-card now-playing-card">
                   <div className="np-top-row">
@@ -433,23 +501,43 @@ function App() {
                   <NowPlayingProgress nowPlaying={nowPlaying} />
                 </div>
               )}
-              {queue.map((item, i) => (
-                <div key={item.id || i} className={`queue-card ${i === 0 ? 'queue-card-next' : ''}`} style={{ animationDelay: `${i * 30}ms` }}>
-                  <div className="queue-number">{i + 1}</div>
-                  <div className="queue-info">
-                    <h3 className="queue-title">{item.cleanTitle || item.title}</h3>
-                    <p className="queue-meta">
-                      <span className="queue-singer">{item.addedBy}</span>
-                      {item.artist && <span className="queue-artist">• {item.artist}</span>}
-                    </p>
+              {queue.map((item, i) => {
+                const isMySlot = mySlots.includes(item.id);
+                const isWaiting = item.status === 'waiting' || (!item.videoId && !item.title);
+                const isSkipped = item.status === 'skipped';
+                return (
+                  <div key={item.id || i} className={`queue-card ${i === 0 ? 'queue-card-next' : ''} ${isWaiting ? 'queue-card-waiting' : ''} ${isSkipped ? 'queue-card-skipped' : ''}`} style={{ animationDelay: `${i * 30}ms` }}>
+                    <div className="queue-number">{i + 1}</div>
+                    <div className="queue-info">
+                      <h3 className={`queue-title ${isWaiting ? 'queue-title-waiting' : ''}`}>
+                        {isWaiting ? `⏳ Chờ chọn bài` : (item.cleanTitle || item.title)}
+                      </h3>
+                      <p className="queue-meta">
+                        <span className="queue-singer">{item.addedBy}</span>
+                        {!isWaiting && item.artist && <span className="queue-artist">• {item.artist}</span>}
+                      </p>
+                      {isWaiting && isMySlot && (
+                        <button
+                          className="btn-choose-song"
+                          onClick={() => {
+                            setSelectingSongForSlot(item.id);
+                            setActiveTab('search');
+                          }}
+                        >
+                          🎵 Chọn bài ngay
+                        </button>
+                      )}
+                    </div>
+                    {isSkipped ? (
+                      <div className="skipped-badge">Đã skip</div>
+                    ) : i === 0 ? (
+                      <div className="next-badge"><IconPlay /> Sắp hát</div>
+                    ) : (
+                      <div className="queue-position">#{i + 1}</div>
+                    )}
                   </div>
-                  {i === 0 ? (
-                    <div className="next-badge"><IconPlay /> Sắp hát</div>
-                  ) : (
-                    <div className="queue-position">#{i + 1}</div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -533,6 +621,32 @@ function App() {
         </div>
       )
       }
+
+      {/* Reserve Modal */}
+      {showReserveModal && (
+        <div className="modal-overlay" onClick={() => setShowReserveModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <h2 className="modal-title">Giữ chỗ</h2>
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '12px' }}>Giữ chỗ trong hàng chờ, chọn bài sau</p>
+            <div className="modal-input-group">
+              <label className="modal-label">Tên của bạn</label>
+              <input
+                type="text"
+                placeholder="Ví dụ: Anh Tuấn, Chị Hoa..."
+                value={reserveName}
+                onChange={(e) => setReserveName(e.target.value)}
+                className="modal-input"
+                autoComplete="off"
+              />
+            </div>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setShowReserveModal(false)}>Hủy</button>
+              <button className="btn-confirm" onClick={handleReserve} disabled={!reserveName.trim()}>Giữ chỗ</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {

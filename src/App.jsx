@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconMic, IconMusic, IconSearch, IconList, IconPlus, IconX, IconCheck, IconPlay, IconStar, IconLoader } from './Icons';
-import { addSongToQueue, addReservation, updateSlotWithSong, listenToQueue, listenToNowPlaying } from './firebase';
+import { addSongToQueue, addReservation, updateSlotWithSong, listenToQueue, listenToNowPlaying, startBeatChange, confirmBeatChange, cancelBeatChange } from './firebase';
 import { searchVideos, formatViews } from './videoSearch';
 import { useSuggestions } from './useSuggestions';
 import SuggestDropdown from './SuggestDropdown';
@@ -91,6 +91,7 @@ function App() {
   const [showBeatModal, setShowBeatModal] = useState(false);
   const [pendingTrack, setPendingTrack] = useState(null);
   const [selectedBeatOptions, setSelectedBeatOptions] = useState([]);
+  const [showBeatChangeModal, setShowBeatChangeModal] = useState(false);
 
   // Name suggestions
   const nameSuggestions = useNameSuggestions(guestName);
@@ -255,6 +256,27 @@ function App() {
       setToast('Lỗi chọn bài. Thử lại nhé!');
       setTimeout(() => setToast(null), 2500);
     }
+  };
+
+  // ─── Beat Change (mid-song) ───
+  const handleStartBeatChange = () => {
+    if (!nowPlaying) return;
+    const existingOptions = nowPlaying.beatOptions || [];
+    setShowBeatChangeModal(true);
+    startBeatChange(existingOptions).catch(() => {});
+  };
+
+  const handleBeatChangeConfirm = async (selectedBeat) => {
+    setShowBeatChangeModal(false);
+    if (!selectedBeat) return;
+    await confirmBeatChange(selectedBeat).catch(() => {});
+    setToast('Đã đổi beat thành công!');
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const handleBeatChangeCancel = () => {
+    setShowBeatChangeModal(false);
+    cancelBeatChange().catch(() => {});
   };
 
   const mySlots = JSON.parse(localStorage.getItem('karaoke_mySlots') || '[]');
@@ -513,6 +535,11 @@ function App() {
                     <div className="now-playing-badge">Đang hát</div>
                   </div>
                   <NowPlayingProgress nowPlaying={nowPlaying} />
+                  {savedName && nowPlaying.addedBy === savedName && (
+                    <button className="btn-change-beat" onClick={handleStartBeatChange}>
+                      🎵 Đổi beat
+                    </button>
+                  )}
                 </div>
               )}
               {queue.map((item, i) => {
@@ -520,7 +547,7 @@ function App() {
                 const isWaiting = item.status === 'waiting' || (!item.videoId && !item.title);
                 const isSkipped = item.status === 'skipped';
                 return (
-                  <div key={item.id || i} className={`queue-card ${i === 0 ? 'queue-card-next' : ''} ${isWaiting ? 'queue-card-waiting' : ''} ${isSkipped ? 'queue-card-skipped' : ''}`} style={{ animationDelay: `${i * 30}ms` }}>
+                  <div key={item.id || i} className={`queue-card ${i === 0 ? 'queue-card-next' : ''} ${isWaiting ? 'queue-card-waiting' : ''} ${isSkipped ? 'queue-card-skipped' : ''} ${item.wasSkipped && !isSkipped && !isWaiting ? 'queue-card-was-skipped' : ''}`} style={{ animationDelay: `${i * 30}ms` }}>
                     <div className="queue-number">{i + 1}</div>
                     <div className="queue-info">
                       <h3 className={`queue-title ${isWaiting ? 'queue-title-waiting' : ''}`}>
@@ -557,12 +584,20 @@ function App() {
         </div>
       )}
 
-      {/* Beat Selection Modal */}
+      {/* Beat Selection Modal (new song) */}
       <BeatSelectionModal
         isOpen={showBeatModal}
         onClose={() => setShowBeatModal(false)}
         onConfirm={handleBeatConfirm}
         track={pendingTrack}
+      />
+
+      {/* Beat Change Modal (mid-song) */}
+      <BeatSelectionModal
+        isOpen={showBeatChangeModal}
+        onClose={handleBeatChangeCancel}
+        onConfirm={(selectedBeat) => handleBeatChangeConfirm(selectedBeat)}
+        track={nowPlaying}
       />
 
       {/* Name Modal */}

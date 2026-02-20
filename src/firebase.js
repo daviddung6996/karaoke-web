@@ -281,6 +281,34 @@ export async function updateSlotWithSong(songId, songData) {
     await syncPlayQueue();
 }
 
+// --- Beat Change ---
+
+export async function startBeatChange(beatOptions) {
+    if (!firebaseReady || !database) return;
+    await update(ref(database, 'nowPlaying'), {
+        changingBeat: true,
+        beatOptions: beatOptions || [],
+    });
+}
+
+export async function confirmBeatChange(newBeat) {
+    if (!firebaseReady || !database || !newBeat) return;
+    await update(ref(database, 'nowPlaying'), {
+        videoId: newBeat.videoId,
+        title: newBeat.title,
+        changingBeat: false,
+        beatOptions: null,
+    });
+}
+
+export async function cancelBeatChange() {
+    if (!firebaseReady || !database) return;
+    await update(ref(database, 'nowPlaying'), {
+        changingBeat: false,
+        beatOptions: null,
+    });
+}
+
 // --- Listeners ---
 
 export function listenToQueue(callback) {

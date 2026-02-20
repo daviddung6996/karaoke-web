@@ -919,6 +919,177 @@ body {
   background: var(--accent-hover);
 }
 
+/* ═══════════════════ BEAT SELECTION MODAL ═══════════════════ */
+.beat-modal-song {
+  background: var(--accent-light);
+  border: 1px solid #c7d2fe;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.beat-modal-song-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.beat-modal-song-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.beat-modal-song-artist {
+  font-size: 12px;
+  color: var(--accent-text);
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.beat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.beat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.beat-item:active {
+  transform: scale(0.98);
+}
+
+.beat-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.beat-thumb {
+  width: 56px;
+  height: 42px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-input);
+  flex-shrink: 0;
+}
+
+.beat-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.beat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.beat-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.beat-item.selected .beat-label {
+  color: var(--accent);
+}
+
+.beat-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.beat-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.beat-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.beat-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.beat-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.beat-loading-text {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.beat-skip-btn {
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  flex: 1;
+}
+
+.beat-skip-btn:active {
+  transform: scale(0.97);
+  background: var(--bg-card-hover);
+}
+
 /* ═══════════════════ TOAST ═══════════════════ */
 .toast {
   position: fixed;

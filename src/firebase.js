@@ -181,7 +181,7 @@ export async function addSongToQueue(song) {
     const newSongRef = push(songsRef);
     const newSongKey = newSongRef.key;
 
-    await set(newSongRef, {
+    const songData = {
         id: newSongKey,
         videoId: song.videoId || '',
         title: song.title,
@@ -192,7 +192,9 @@ export async function addSongToQueue(song) {
         addedAt: now,
         isPriority: false,
         source: 'web',
-    });
+    };
+    if (song.beatOptions) songData.beatOptions = song.beatOptions;
+    await set(newSongRef, songData);
 
     await syncPlayQueue();
     return { key: newSongKey };

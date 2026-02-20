@@ -5,6 +5,7 @@ import { searchVideos, formatViews } from './videoSearch';
 import { useSuggestions } from './useSuggestions';
 import SuggestDropdown from './SuggestDropdown';
 import { useNameSuggestions } from './useNameSuggestions';
+import BeatSelectionModal from './BeatSelectionModal';
 
 const QUICK_TAGS = {
   'Trữ Tình & Bolero': ['Bolero', 'Nhạc Sống', 'Tân Cổ', 'Vọng Cổ', 'Trữ Tình Quê Hương', 'Nhạc Vàng', 'Bolero Remix', 'LK Bolero'],
@@ -87,6 +88,9 @@ function App() {
   const [reserveName, setReserveName] = useState('');
   const [selectingSongForSlot, setSelectingSongForSlot] = useState(null); // slot ID being filled
   const [nameSelectedIndex, setNameSelectedIndex] = useState(-1); // For keyboard nav
+  const [showBeatModal, setShowBeatModal] = useState(false);
+  const [pendingTrack, setPendingTrack] = useState(null);
+  const [selectedBeatOptions, setSelectedBeatOptions] = useState([]);
 
   // Name suggestions
   const nameSuggestions = useNameSuggestions(guestName);
@@ -164,7 +168,14 @@ function App() {
       handleSelectSongForSlot(song);
       return;
     }
-    setSelectedSong(song);
+    setPendingTrack(song);
+    setShowBeatModal(true);
+  };
+
+  const handleBeatConfirm = (selectedBeat, beatOptions) => {
+    setShowBeatModal(false);
+    setSelectedSong(selectedBeat);
+    setSelectedBeatOptions(beatOptions);
     if (savedName) {
       setGuestName(savedName);
       setIsEditingName(false);
@@ -186,6 +197,9 @@ function App() {
         videoId: selectedSong.videoId || '',
         thumbnail: selectedSong.thumbnail || '',
         addedBy: name,
+        beatOptions: selectedBeatOptions.length > 0
+          ? selectedBeatOptions.map(b => ({ videoId: b.videoId, title: b.title, thumbnail: b.thumbnail, beatLabel: b.beatLabel, viewCount: b.viewCount }))
+          : null,
       });
       setShowNameModal(false);
       setSelectedSong(null);
@@ -542,6 +556,14 @@ function App() {
           )}
         </div>
       )}
+
+      {/* Beat Selection Modal */}
+      <BeatSelectionModal
+        isOpen={showBeatModal}
+        onClose={() => setShowBeatModal(false)}
+        onConfirm={handleBeatConfirm}
+        track={pendingTrack}
+      />
 
       {/* Name Modal */}
       {showNameModal && (

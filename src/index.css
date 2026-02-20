@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 * {
   margin: 0;
@@ -1356,6 +1356,7 @@ body {
   color: white;
   border: none;
   border-radius: var(--radius);
+  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
@@ -1384,6 +1385,7 @@ body {
 
 .queue-title-waiting {
   color: #b45309 !important;
+  font-family: 'Nunito', sans-serif;
 }
 
 .btn-choose-song {
@@ -1396,6 +1398,7 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -1408,6 +1411,7 @@ body {
 }
 
 .skipped-badge {
+  font-family: 'Nunito', sans-serif;
   font-size: 10px;
   font-weight: 800;
   color: #94a3b8;
@@ -1427,6 +1431,7 @@ body {
   padding: 8px 12px;
   background: #fffbeb;
   border-bottom: 1px solid #f59e0b;
+  font-family: 'Nunito', sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: #b45309;
@@ -1436,6 +1441,7 @@ body {
   background: none;
   border: none;
   color: #b45309;
+  font-family: 'Nunito', sans-serif;
   font-weight: 800;
   font-size: 12px;
   cursor: pointer;

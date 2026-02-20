@@ -91,7 +91,6 @@ function App() {
   const [showBeatModal, setShowBeatModal] = useState(false);
   const [pendingTrack, setPendingTrack] = useState(null);
   const [selectedBeatOptions, setSelectedBeatOptions] = useState([]);
-  const [showBeatChangeModal, setShowBeatChangeModal] = useState(false);
 
   // Name suggestions
   const nameSuggestions = useNameSuggestions(guestName);
@@ -164,6 +163,11 @@ function App() {
   };
 
   const handleAddClick = (song) => {
+    // If changing beat for currently playing song
+    if (changingBeatMode) {
+      handleBeatChangeSelect(song);
+      return;
+    }
     // If selecting song for an existing slot
     if (selectingSongForSlot) {
       handleSelectSongForSlot(song);
@@ -259,23 +263,27 @@ function App() {
   };
 
   // ─── Beat Change (mid-song) ───
+  // "Đổi beat" = switch to search tab to find a different video
+  const [changingBeatMode, setChangingBeatMode] = useState(false);
+
   const handleStartBeatChange = () => {
     if (!nowPlaying) return;
-    const existingOptions = nowPlaying.beatOptions || [];
-    setShowBeatChangeModal(true);
-    startBeatChange(existingOptions).catch(() => {});
+    setChangingBeatMode(true);
+    setActiveTab('search');
+    startBeatChange(nowPlaying.beatOptions || []).catch(() => {});
   };
 
-  const handleBeatChangeConfirm = async (selectedBeat) => {
-    setShowBeatChangeModal(false);
-    if (!selectedBeat) return;
-    await confirmBeatChange(selectedBeat).catch(() => {});
+  const handleBeatChangeSelect = async (song) => {
+    if (!changingBeatMode) return;
+    await confirmBeatChange({ videoId: song.videoId, title: song.title }).catch(() => {});
+    setChangingBeatMode(false);
     setToast('Đã đổi beat thành công!');
     setTimeout(() => setToast(null), 2500);
+    setActiveTab('queue');
   };
 
-  const handleBeatChangeCancel = () => {
-    setShowBeatChangeModal(false);
+  const handleCancelBeatChange = () => {
+    setChangingBeatMode(false);
     cancelBeatChange().catch(() => {});
   };
 
@@ -344,6 +352,12 @@ function App() {
       {/* Search Tab */}
       {activeTab === 'search' && (
         <div className="content">
+          {changingBeatMode && (
+            <div className="slot-filling-banner" style={{ background: '#eef2ff', borderColor: '#6366f1' }}>
+              <span style={{ color: '#4338ca' }}>🎵 Tìm beat mới cho bài đang hát</span>
+              <button onClick={handleCancelBeatChange} className="slot-filling-cancel" style={{ color: '#4338ca' }}>Hủy</button>
+            </div>
+          )}
           {selectingSongForSlot && (
             <div className="slot-filling-banner">
               <span>🎵 Đang chọn bài cho chỗ đã giữ</span>
@@ -590,14 +604,6 @@ function App() {
         onClose={() => setShowBeatModal(false)}
         onConfirm={handleBeatConfirm}
         track={pendingTrack}
-      />
-
-      {/* Beat Change Modal (mid-song) */}
-      <BeatSelectionModal
-        isOpen={showBeatChangeModal}
-        onClose={handleBeatChangeCancel}
-        onConfirm={(selectedBeat) => handleBeatChangeConfirm(selectedBeat)}
-        track={nowPlaying}
       />
 
       {/* Name Modal */}

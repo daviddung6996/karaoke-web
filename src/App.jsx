@@ -310,7 +310,7 @@ function App() {
         <div className="content">
           {selectingSongForSlot && (
             <div className="slot-filling-banner">
-              <span>🎵 Đang chọn bài cho slot của bạn</span>
+              <span>🎵 Đang chọn bài cho chỗ đã giữ</span>
               <button onClick={() => setSelectingSongForSlot(null)} className="slot-filling-cancel">Hủy</button>
             </div>
           )}
@@ -482,7 +482,7 @@ function App() {
                 }
                 setShowReserveModal(true);
               }}>
-                <IconPlus /> Giữ chỗ (không cần chọn bài)
+                <IconPlus /> Giữ chỗ (không cần chọn bài ngay)
               </button>
 
               {nowPlaying && (
@@ -529,7 +529,7 @@ function App() {
                       )}
                     </div>
                     {isSkipped ? (
-                      <div className="skipped-badge">Đã skip</div>
+                      <div className="skipped-badge">Đã bỏ qua</div>
                     ) : i === 0 ? (
                       <div className="next-badge"><IconPlay /> Sắp hát</div>
                     ) : (
